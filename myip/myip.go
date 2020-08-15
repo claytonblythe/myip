@@ -30,9 +30,9 @@ func make_request(url string, results chan int) {
 
 func My_ip() {
 	client_display := get_final_display()
-	color.HiGreen("\nFast.com result: \n%s\n\n", client_display)
+	color.HiGreen("\nfast.com result: \n%s\n\n", client_display)
 	res := get_nord_result()
-	color.HiGreen("Nord.com result: \n%s\n\n", res)
+	color.HiGreen("nordvpn.com result: \n%s\n\n", res)
 
 }
 
