@@ -30,7 +30,9 @@ func make_request(url string, results chan int) {
 
 func My_ip() {
 	client_display := get_final_display()
-	color.HiGreen("Fast.com result: \n%s\n", client_display)
+	color.HiGreen("\nFast.com result: \n%s\n\n", client_display)
+	res := get_nord_result()
+	color.HiGreen("Nord.com result: \n%s\n\n", res)
 
 }
 
@@ -39,6 +41,22 @@ func get_final_display() string {
 	token := get_token(js_url)
 	client_display := get_client_display(token)
 	return client_display
+}
+
+func get_nord_result() string {
+	url := "https://nordvpn.com/wp-admin/admin-ajax.php?action=get_user_info_data"
+	response, err := http.Get(url)
+	if err != nil {
+		color.HiRed(url)
+		log.Fatal(err)
+	}
+	var data map[string]interface{}
+	responseData, err := ioutil.ReadAll(response.Body)
+	// responseString := string(responseData)
+	err = json.Unmarshal([]byte(responseData), &data)
+	s := []string{data["city"].(string), data["country"].(string), data["ip"].(string), data["isp"].(string)}
+	final_string := strings.Join(s, ", ")
+	return final_string
 }
 
 func get_client_display(token string) string {
