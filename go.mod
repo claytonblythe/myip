@@ -1,4 +1,4 @@
-module github.com/claytonblythe/fastcli
+module github.com/claytonblythe/myip
 
 go 1.12
 

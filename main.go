@@ -3,9 +3,9 @@ package main
 import (
 	_ "net/http/pprof"
 
-	fastcli "github.com/claytonblythe/fastcli/fastcli"
+	myip "github.com/claytonblythe/myip/myip"
 )
 
 func main() {
-	fastcli.Test_Speed()
+	myip.My_ip()
 }

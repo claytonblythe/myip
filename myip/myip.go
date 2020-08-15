@@ -2,18 +2,12 @@ package fastcli
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
-	"time"
-
-	"net/url"
 
 	"github.com/fatih/color"
-
-	"github.com/sparrc/go-ping"
 )
 
 func make_request(url string, results chan int) {
@@ -34,43 +28,20 @@ func make_request(url string, results chan int) {
 	results <- total_read
 }
 
-func Test_Speed() {
-	color.HiGreen("\nConnecting to fast.com...\n")
-	client_display, _, url_list, fast_endpoint := get_urls()
-	color.HiGreen("\nTesting Download Speed...")
-	color.HiGreen("Client: %s\n", client_display)
-	color.HiBlue("Fast.com endpoint: %s\n\n", fast_endpoint)
-
-	num_urls := len(url_list)
-	results := make(chan int, num_urls*2)
-	start := time.Now()
-	for _, url := range url_list {
-		go make_request(url, results)
-	}
-
-	total_data_downloaded := 0
-	for i := 1; i <= num_urls; i++ {
-		this_url_data_downloaded := <-results
-		total_data_downloaded = total_data_downloaded + this_url_data_downloaded
-	}
-	duration := time.Since(start).Seconds()
-	color.HiGreen("Duration: %.2f seconds\n", duration)
-	mb := float64(total_data_downloaded) / float64(125000)
-	megabytes := float64(total_data_downloaded) / float64(1048576)
-	color.HiGreen("Data downloaded: %.2f MB\n", megabytes)
-	mb_per_sec := mb / duration
-	color.HiGreen("Speed: %.2f Mbps \n", mb_per_sec)
+func My_ip() {
+	client_display := get_final_display()
+	color.HiGreen("Fast.com result: \n%s\n", client_display)
 
 }
 
-func get_urls() (string, []string, []string, string) {
+func get_final_display() string {
 	js_url := get_js_url()
 	token := get_token(js_url)
-	client_display, display_strings, url_list, fast_endpoint := get_url_list(token)
-	return client_display, display_strings, url_list, fast_endpoint
+	client_display := get_client_display(token)
+	return client_display
 }
 
-func get_url_list(token string) (string, []string, []string, string) {
+func get_client_display(token string) string {
 	s := []string{"https://api.fast.com/netflix/speedtest/v2?https=true&token=", token, "&urlCount=5"}
 	fast_endpoint := strings.Join(s, "")
 	response, err := http.Get(fast_endpoint)
@@ -87,42 +58,13 @@ func get_url_list(token string) (string, []string, []string, string) {
 	if err := json.Unmarshal([]byte(responseString), &obj); err != nil {
 		log.Fatal(err)
 	}
-	targets := obj["targets"].([]interface{})
 	client_ip := obj["client"].(map[string]interface{})["ip"].(string)
 	client_location := obj["client"].(map[string]interface{})["location"]
 	client_city := client_location.(map[string]interface{})["city"].(string)
 	client_country := client_location.(map[string]interface{})["country"].(string)
 	client_display := strings.Join([]string{client_city, client_country, client_ip}, ", ")
-	targets_display := []string{}
-	target_urls := []string{}
-	color.HiGreen("Connecting to test servers...\n")
-	color.HiGreen("Server locations:")
-	for _, target := range targets {
-		target := target.(map[string]interface{})
-		// element is the element from someSlice for where we are
-		target_url := target["url"].(string)
-		location := target["location"].(map[string]interface{})
-		city := location["city"].(string)
-		country := location["country"].(string)
-		u, err := url.Parse(target_url)
-		if err != nil {
-			panic(err)
-		}
-		pinger, err := ping.NewPinger(u.Host)
-		if err != nil {
-			panic(err)
-		}
-		pinger.Count = 1
-		pinger.Run()                 // blocks until finished
-		stats := pinger.Statistics() // get send/receive/rtt stats
-		s := []string{city, country, target_url, fmt.Sprintf("%vms Avg RTT", stats.AvgRtt.Milliseconds())}
-		target_display := strings.Join(s, ", ")
-		color.HiBlue(target_display)
-		targets_display = append(targets_display, target_display)
-		target_urls = append(target_urls, target_url)
-	}
 
-	return client_display, targets_display, target_urls, fast_endpoint
+	return client_display
 
 }
 
