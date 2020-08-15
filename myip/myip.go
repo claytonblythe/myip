@@ -2,6 +2,7 @@ package fastcli
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -29,10 +30,12 @@ func make_request(url string, results chan int) {
 }
 
 func My_ip() {
+	color.HiGreen("\nUsing fast.com...\n")
 	client_display := get_final_display()
-	color.HiGreen("\nfast.com result: \n%s\n\n", client_display)
+	color.HiGreen(client_display)
+	color.HiGreen("\nUsing nordvpn.com...\n")
 	res := get_nord_result()
-	color.HiGreen("nordvpn.com result: \n%s\n\n", res)
+	color.HiGreen("%s\n\n", res)
 
 }
 
@@ -54,7 +57,14 @@ func get_nord_result() string {
 	responseData, err := ioutil.ReadAll(response.Body)
 	// responseString := string(responseData)
 	err = json.Unmarshal([]byte(responseData), &data)
-	s := []string{data["city"].(string), data["country"].(string), data["ip"].(string), data["isp"].(string)}
+	lat_str := fmt.Sprintf("%f", data["coordinates"].(map[string]interface{})["latitude"])
+	long_str := fmt.Sprintf("%f", data["coordinates"].(map[string]interface{})["longitude"])
+	lat_long_arr := []string{lat_str, long_str}
+	lat_long_str := strings.Join(lat_long_arr, ",")
+	google_url_arr := []string{"\nhttps://www.google.com/maps/search/?api=1&query=", lat_long_str}
+	google_url := strings.Join(google_url_arr, "")
+
+	s := []string{data["city"].(string), data["region"].(string), data["country"].(string), data["ip"].(string), data["isp"].(string), google_url}
 	final_string := strings.Join(s, ", ")
 	return final_string
 }

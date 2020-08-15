@@ -20,8 +20,14 @@ myip
 ### Visual Output
 ```
 ~ $ myip
-Fast.com result:
-Seattle, US, 104.200.129.213
+
+Using fast.com...
+Cincinnati, US, 8.21.101.100
+
+Using nordvpn.com...
+Cincinnati, Ohio, United States, 8.21.101.100, Zillow,
+https://www.google.com/maps/search/?api=1&query=39.152600,-84.386900
+
 ```
 
 
